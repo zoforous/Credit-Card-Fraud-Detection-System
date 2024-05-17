@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    body {
+        background-color: navajowhite;
+        width: 200%;
+        height: 200%;
+        transform-origin: top left;
+        transform: scale(50%);
+    }
+
+    .input:focus {
+        outline: none;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        margin: 0;
+    }
+
+    .input {
+        margin: 0px;
+        padding: 0px;
+        width: 50px;
+        border: 0px;
+    }
+
+    .option {
+        outline: none;
+        background-color: none;
+    }
+
+    .output {
+        width: 110px;
+        border: 0px;
+    }
+
+    .output:focus {
+        outline: none;
+    }
+    #heading {
+    font-size: 100px;
+    text-align: center;
+        font-weight: bold;
+        padding: 30px;
+        padding-bottom: 100px;
+    }
+    #predictor {
+    border-collapse: collapse;
+        font-size: 30px;
+}
+
+#predictor tr:nth-child(odd) {
+    background-color: white;
+}
+
+#predictor tr:nth-child(even) {
+    background-color: #f0f0f0; /* Light grey */
+}
+
+
+
+#predictor td, #predictor th {
+    border: 3px solid black;
+    padding: 8px;
+}
+
+#bttn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    background-color: darkred; /* Green */
+    transition: background-color 0.3s;
+}
+
+#bttn:hover {
+    background-color: #45a049; /* Darker green */
+}
+</style>
+
+<!-- Create Sheet Table -->
+    <div id="heading">
+        Credit Card Fraud Detection
+    </div>
+<table class="table table-bordered" id="predictor">
+    <!--- Table Header ---->
+    <thead class="thead">
+        <tr>
+            <th scope="col">#</th>
+            <!---- Write features names from backend in Table Header ---->
+            {% for i,j in features.items %}
+            <th scope="col" style="text-align: center;" class="align-middle">{{i}}</th>
+            {% endfor %}
+            <!----/ Write features names from backend in Table Header ---->
+        </tr>
+    </thead>
+    <!---/ Table Header ---->
+    <tbody>
+        <tr>
+            <td><b>1</b></td>
+            {% for i,j in features.items %}
+            <!--- Input Box for Numeric Features ---->
+            {% if j.type == 'text' %}
+            <td>
+                <input type="number" name={{i}} class="input" onchange="addRow(this)">
+            </td>
+            <!-- Disabled Input Box for Output -->
+            {% elif j.type == 'output' %}
+            <td>
+                <input class="output" id="output1" disabled>
+            </td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+
+
+<!------------- Export To CSV Button ------------------>
+<div class="container">
+    <button type="button" class="btn btn-secondary" id="bttn" onclick="downloadCSVFile()">
+        Export to CSV
+    </button>
+
+    <button type="button" class="btn btn-secondary" id="bttn" style="float: right;" onclick="predict()">
+        Predict
+    </button>
+</div>
+
+<script type="text/javascript">
+
+    const url = "{{ hostname }}"
+    let i = 1;
+
+    let time = v1 = v2 = v3 = v4 = v5 = v6 = v7 = v8 = v9 = v10 = v11 = v12 = v13 = v14 = v15 = v16 = v17 = v18 = v19 = v20 = v21 = v22 = v23 = v24 = v25 = v26 = v27 = v28 = amount = 0
+
+
+    // Variable to store the final csv data
+    var csv_data = ['time, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, amount, class'];
+
+    function downloadCSVFile() {
+        csv_data = csv_data.join('\n');
+
+        // Create CSV file object and feed our
+        // csv_data into it
+        CSVFile = new Blob([csv_data], { type: "text/csv" });
+
+        // Create to temporary link to initiate
+        // download process
+        var temp_link = document.createElement('a');
+
+        // Download csv file
+        temp_link.download = "Fraud Credot Card Prediction.csv";
+        var url = window.URL.createObjectURL(CSVFile);
+        temp_link.href = url;
+
+        // This link should not be displayed
+        temp_link.style.display = "none";
+        document.body.appendChild(temp_link);
+
+        // Automatically click the link to trigger download
+        temp_link.click();
+        document.body.removeChild(temp_link);
+    }
+
+    // Add Row Function that will also predict big mart.
+    function addRow(htmlobj) {
+
+        if (htmlobj.name == 'Time') time = htmlobj.value;
+        if (htmlobj.name == 'V1') v1 = htmlobj.value;
+        if (htmlobj.name == 'V2') v2 = htmlobj.value;
+        if (htmlobj.name == 'V3') v3 = htmlobj.value;
+        if (htmlobj.name == 'V4') v4 = htmlobj.value;
+        if (htmlobj.name == 'V5') v5 = htmlobj.value;
+        if (htmlobj.name == 'V6') v6 = htmlobj.value;
+        if (htmlobj.name == 'V7') v7 = htmlobj.value;
+        if (htmlobj.name == 'V8') v8 = htmlobj.value;
+        if (htmlobj.name == 'V9') v9 = htmlobj.value;
+        if (htmlobj.name == 'V10') v10 = htmlobj.value;
+        if (htmlobj.name == 'V11') v11 = htmlobj.value;
+        if (htmlobj.name == 'V12') v12 = htmlobj.value;
+        if (htmlobj.name == 'V13') v13 = htmlobj.value;
+        if (htmlobj.name == 'V14') v14 = htmlobj.value;
+        if (htmlobj.name == 'V15') v15 = htmlobj.value;
+        if (htmlobj.name == 'V16') v16 = htmlobj.value;
+        if (htmlobj.name == 'V17') v17 = htmlobj.value;
+        if (htmlobj.name == 'V18') v18 = htmlobj.value;
+        if (htmlobj.name == 'V19') v19 = htmlobj.value;
+        if (htmlobj.name == 'V20') v20 = htmlobj.value;
+        if (htmlobj.name == 'V21') v21 = htmlobj.value;
+        if (htmlobj.name == 'V22') v22 = htmlobj.value;
+        if (htmlobj.name == 'V23') v23 = htmlobj.value;
+        if (htmlobj.name == 'V24') v24 = htmlobj.value;
+        if (htmlobj.name == 'V25') v25 = htmlobj.value;
+        if (htmlobj.name == 'V26') v26 = htmlobj.value;
+        if (htmlobj.name == 'V27') v27 = htmlobj.value;
+        if (htmlobj.name == 'V28') v28 = htmlobj.value;
+        if (htmlobj.name == 'Amount') amount = htmlobj.value;
+
+    }
+
+    async function predict() {
+        // Check if all columns are filled or not
+        if (time && v1 && v2 && v3 && v4 && v5 && v6 && v7 && v8 && v9 && v10 && v11 && v12 && v13 && v14 && v15 && v16 && v17 && v18 && v19 && v20 && v21 && v22 && v23 && v24 && v25 && v26 && v27 && v28 && amount) {
+
+            // Send column's data to backend server
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    i,
+                    time,
+                    v1,
+                    v2,
+                    v3,
+                    v4,
+                    v5,
+                    v6,
+                    v7,
+                    v8,
+                    v9,
+                    v10,
+                    v11,
+                    v12,
+                    v13,
+                    v14,
+                    v15,
+                    v16,
+                    v17,
+                    v18,
+                    v19,
+                    v20,
+                    v21,
+                    v22,
+                    v23,
+                    v24,
+                    v25,
+                    v26,
+                    v27,
+                    v28,
+                    amount
+                })
+            })
+
+            // Got predictions as Response
+            const content = await response.json()
+
+            console.log(content.predictions)
+
+            // Write predictions on the table
+            document.getElementById(`output${content.predictions.id}`).value = content.predictions.value;
+
+            // Write predictions on the csv_data array to export data to csv purposes.
+            csv_data.push([
+                time,
+                v1,
+                v2,
+                v3,
+                v4,
+                v5,
+                v6,
+                v7,
+                v8,
+                v9,
+                v10,
+                v11,
+                v12,
+                v13,
+                v14,
+                v15,
+                v16,
+                v17,
+                v18,
+                v19,
+                v20,
+                v21,
+                v22,
+                v23,
+                v24,
+                v25,
+                v26,
+                v27,
+                v28,
+                amount,
+                content.predictions.value
+            ].join(","))
+
+            i++;
+
+            // Add new Row to table
+            const predictor = document.getElementById("predictor")
+            const row = predictor.insertRow(-1);
+
+            id_cell = row.insertCell(0);
+            id_cell.innerHTML = `<b>${i}</b>`;
+
+            var cell_no = 1
+
+            for (var key in content.features) {
+                var value = content.features[key];
+
+                var cell = row.insertCell(cell_no);
+
+                if (value['type'] == 'text') {
+                    cell.innerHTML = `<input class="input" type="text" onchange="addRow(this)" name = ${key}>`
+                }
+                else if (value['type'] == 'output') {
+                    cell.innerHTML = `
+                    <input id="output${i}" class="output" disabled>
+                    `
+                }
+                console.log(value)
+                cell_no++;
+            }
+
+            // Reinitialize the cell with value 0
+            time = v1 = v2 = v3 = v4 = v5 = v6 = v7 = v8 = v9 = v10 = v11 = v12 = v13 = v14 = v15 = v16 = v17 = v18 = v19 = v20 = v21 = v22 = v23 = v24 = v25 = v26 = v27 = v28 = amount = 0
+        }
+        else {
+            alert("Please fillup all the fields");
+        }
+    }
+
+</script>
+{% endblock content %}
